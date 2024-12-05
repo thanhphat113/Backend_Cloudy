@@ -24,60 +24,6 @@ namespace Backend.Migrations
             MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8mb4");
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("Backend.Models.ChatInGroup", b =>
-                {
-                    b.Property<int>("ChatId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("chat_id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ChatId"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime?>("DateCreated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("date_created")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<int>("FromUser")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("from_user");
-
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("group_chat_id");
-
-                    b.Property<bool?>("IsRead")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_read");
-
-                    b.Property<bool?>("IsRecall")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_recall");
-
-                    b.Property<int?>("MediaId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("media_id");
-
-                    b.Property<int>("Otheruser")
-                        .HasColumnType("int");
-
-                    b.HasKey("ChatId")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex("MediaId");
-
-                    b.HasIndex(new[] { "GroupChatId" }, "fk_chat_in_group_group_chat_id");
-
-                    b.HasIndex(new[] { "FromUser" }, "fk_chat_in_group_user_id");
-
-                    b.ToTable("chat_in_group", (string)null);
-                });
-
             modelBuilder.Entity("Backend.Models.ChatInMessage", b =>
                 {
                     b.Property<int?>("ChatId")
@@ -201,39 +147,23 @@ namespace Backend.Migrations
                     b.HasKey("GenderId");
 
                     b.ToTable("gender_type", (string)null);
-                });
 
-            modelBuilder.Entity("Backend.Models.GroupChat", b =>
-                {
-                    b.Property<int>("GroupChatId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("group_chat_id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("GroupChatId"));
-
-                    b.Property<string>("CoverPhoto")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("cover_photo");
-
-                    b.Property<string>("GroupChatName")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("group_chat_name");
-
-                    b.Property<int>("MainTopic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("main_topic")
-                        .HasDefaultValueSql("'1'");
-
-                    b.HasKey("GroupChatId")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "MainTopic" }, "fk_topic_group");
-
-                    b.ToTable("group_chats", (string)null);
+                    b.HasData(
+                        new
+                        {
+                            GenderId = 1,
+                            GenderName = "Không cung cấp"
+                        },
+                        new
+                        {
+                            GenderId = 2,
+                            GenderName = "Nam"
+                        },
+                        new
+                        {
+                            GenderId = 3,
+                            GenderName = "Nữ"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.HistorySearch", b =>
@@ -414,7 +344,7 @@ namespace Backend.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_cover_photo");
 
-                    b.Property<bool?>("IsPictureProfile")
+                    b.Property<bool>("IsPictureProfile")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false)
@@ -504,6 +434,23 @@ namespace Backend.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("privacy_settings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            PrivacyId = 1,
+                            PrivacyName = "Public"
+                        },
+                        new
+                        {
+                            PrivacyId = 2,
+                            PrivacyName = "Friends"
+                        },
+                        new
+                        {
+                            PrivacyId = 3,
+                            PrivacyName = "Private"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.ReactsComment", b =>
@@ -516,8 +463,11 @@ namespace Backend.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("comment_id");
 
-                    b.HasKey("UserId")
+                    b.HasKey("UserId", "CommentId")
                         .HasName("PRIMARY");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.HasIndex(new[] { "CommentId" }, "fk_reacts_comment_comment_id");
 
@@ -534,34 +484,13 @@ namespace Backend.Migrations
                         .HasColumnType("int(11)")
                         .HasColumnName("user_id");
 
+                    b.HasKey("PostId", "UserId");
+
                     b.HasIndex(new[] { "PostId" }, "fk_reacts_post_post_id");
 
                     b.HasIndex(new[] { "UserId" }, "fk_reacts_post_user_id");
 
                     b.ToTable("reacts_post", (string)null);
-                });
-
-            modelBuilder.Entity("Backend.Models.ReadMessage", b =>
-                {
-                    b.Property<bool?>("IsRead")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_read")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int?>("MessagesId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("messages_id");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("user_id");
-
-                    b.HasIndex(new[] { "MessagesId" }, "messages_id");
-
-                    b.HasIndex(new[] { "UserId" }, "user_id");
-
-                    b.ToTable("read_message", (string)null);
                 });
 
             modelBuilder.Entity("Backend.Models.Relationship", b =>
@@ -604,6 +533,32 @@ namespace Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("relationship", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            RelationshipId = 1,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FromUserId = 1,
+                            ToUserId = 2,
+                            TypeRelationship = 1
+                        },
+                        new
+                        {
+                            RelationshipId = 2,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FromUserId = 1,
+                            ToUserId = 3,
+                            TypeRelationship = 2
+                        },
+                        new
+                        {
+                            RelationshipId = 3,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FromUserId = 2,
+                            ToUserId = 3,
+                            TypeRelationship = 2
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.RequestNotification", b =>
@@ -694,6 +649,23 @@ namespace Backend.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("type_media", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            TypeId = 1,
+                            TypeName = "Picture"
+                        },
+                        new
+                        {
+                            TypeId = 2,
+                            TypeName = "Video"
+                        },
+                        new
+                        {
+                            TypeId = 3,
+                            TypeName = "File"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.TypePostNotification", b =>
@@ -721,6 +693,44 @@ namespace Backend.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("type_post_notifications", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            TypeId = 1,
+                            Content = "đã đăng một bài viết mới",
+                            TypeName = "newpost"
+                        },
+                        new
+                        {
+                            TypeId = 2,
+                            Content = "đã chia sẻ một bài viết của bạn",
+                            TypeName = "sharepost"
+                        },
+                        new
+                        {
+                            TypeId = 3,
+                            Content = "đã thả cloud vào một bài viết của bạn",
+                            TypeName = "likepost"
+                        },
+                        new
+                        {
+                            TypeId = 4,
+                            Content = "đã bình luận vào một bài viết của bạn",
+                            TypeName = "comment"
+                        },
+                        new
+                        {
+                            TypeId = 5,
+                            Content = "đã thả cloud cho một comment của bạn",
+                            TypeName = "likecomment"
+                        },
+                        new
+                        {
+                            TypeId = 6,
+                            Content = "đđã trả lời bình luận của bạn",
+                            TypeName = "commentoncomment"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.TypeRelationship", b =>
@@ -741,16 +751,28 @@ namespace Backend.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("type_relationship", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            TypeId = 1,
+                            TypeName = "Follower"
+                        },
+                        new
+                        {
+                            TypeId = 2,
+                            TypeName = "Friend"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.User", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int(11)")
                         .HasColumnName("user_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int?>("UserId"));
 
                     b.Property<string>("Bio")
                         .HasColumnType("text")
@@ -785,10 +807,6 @@ namespace Backend.Migrations
                         .HasColumnType("int(1)")
                         .HasColumnName("gender_id");
 
-                    b.Property<bool?>("IsOnline")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_online");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -814,7 +832,42 @@ namespace Backend.Migrations
                     b.HasIndex(new[] { "Email" }, "idx_username")
                         .IsUnique();
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("user", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DateUpdated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "15@gmail.com",
+                            FirstName = "Hấu",
+                            GenderId = 1,
+                            LastName = "Dưa",
+                            Password = "AQAAAAIAAYagAAAAEOYjiubhy6sR49wGjul/RSJOElGbL+T1BHdWMr6O2ATWaJcZLKnm49DaFKrkKPvoKA=="
+                        },
+                        new
+                        {
+                            UserId = 2,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DateUpdated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "10@gmail.com",
+                            FirstName = "Đủ",
+                            GenderId = 1,
+                            LastName = "Đu",
+                            Password = "AQAAAAIAAYagAAAAEBIqogwoDD07RFh7d5XB0iO3XQfOiT4WLcH5jCQz53Ai5sqU2ebdhqaiWWRCChMEgg=="
+                        },
+                        new
+                        {
+                            UserId = 3,
+                            DateCreated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DateUpdated = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "12@gmail.com",
+                            FirstName = "Riêng",
+                            GenderId = 1,
+                            LastName = "Sầu",
+                            Password = "AQAAAAIAAYagAAAAENdJI7tGR/5QBSoCakofqb73ExGowB6S2NmoMd4WLB3h2OJ5SvCqhWCRoQ4wsVxR+Q=="
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.UserGroup", b =>
@@ -903,25 +956,6 @@ namespace Backend.Migrations
                     b.ToTable("user_in_group", (string)null);
                 });
 
-            modelBuilder.Entity("UserInGroupChat", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("user_id");
-
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int(11)")
-                        .HasColumnName("group_chat_id");
-
-                    b.HasKey("UserId", "GroupChatId")
-                        .HasName("PRIMARY")
-                        .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-
-                    b.HasIndex(new[] { "GroupChatId" }, "fk_user_in_group_chat_group_chat_id");
-
-                    b.ToTable("user_in_group_chat", (string)null);
-                });
-
             modelBuilder.Entity("media_message", b =>
                 {
                     b.Property<int>("media_id")
@@ -950,33 +984,6 @@ namespace Backend.Migrations
                     b.HasIndex("post_id");
 
                     b.ToTable("post_media");
-                });
-
-            modelBuilder.Entity("Backend.Models.ChatInGroup", b =>
-                {
-                    b.HasOne("Backend.Models.User", "FromUserNavigation")
-                        .WithMany("ChatInGroups")
-                        .HasForeignKey("FromUser")
-                        .IsRequired()
-                        .HasConstraintName("fk_group_user");
-
-                    b.HasOne("Backend.Models.GroupChat", "GroupChat")
-                        .WithMany("ChatInGroups")
-                        .HasForeignKey("GroupChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_chat_in_group_group_chat_id");
-
-                    b.HasOne("Backend.Models.Media", "Media")
-                        .WithMany("ChatInGroup")
-                        .HasForeignKey("MediaId")
-                        .HasConstraintName("fk_chatInGroup_media");
-
-                    b.Navigation("FromUserNavigation");
-
-                    b.Navigation("GroupChat");
-
-                    b.Navigation("Media");
                 });
 
             modelBuilder.Entity("Backend.Models.ChatInMessage", b =>
@@ -1032,17 +1039,6 @@ namespace Backend.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Backend.Models.GroupChat", b =>
-                {
-                    b.HasOne("Backend.Models.MainTopic", "MainTopicNavigation")
-                        .WithMany("GroupChats")
-                        .HasForeignKey("MainTopic")
-                        .IsRequired()
-                        .HasConstraintName("fk_topic_group");
-
-                    b.Navigation("MainTopicNavigation");
                 });
 
             modelBuilder.Entity("Backend.Models.HistorySearch", b =>
@@ -1199,23 +1195,6 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.ReadMessage", b =>
-                {
-                    b.HasOne("Backend.Models.Message", "Messages")
-                        .WithMany()
-                        .HasForeignKey("MessagesId")
-                        .HasConstraintName("read_message_ibfk_2");
-
-                    b.HasOne("Backend.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .HasConstraintName("read_message_ibfk_1");
-
-                    b.Navigation("Messages");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Backend.Models.Relationship", b =>
                 {
                     b.HasOne("Backend.Models.User", "FromUser")
@@ -1337,23 +1316,6 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserInGroupChat", b =>
-                {
-                    b.HasOne("Backend.Models.GroupChat", null)
-                        .WithMany()
-                        .HasForeignKey("GroupChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_in_group_chat_group_chat_id");
-
-                    b.HasOne("Backend.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_in_group_chat_user_id");
-                });
-
             modelBuilder.Entity("media_message", b =>
                 {
                     b.HasOne("Backend.Models.Media", null)
@@ -1398,22 +1360,13 @@ namespace Backend.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("Backend.Models.GroupChat", b =>
-                {
-                    b.Navigation("ChatInGroups");
-                });
-
             modelBuilder.Entity("Backend.Models.MainTopic", b =>
                 {
-                    b.Navigation("GroupChats");
-
                     b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Backend.Models.Media", b =>
                 {
-                    b.Navigation("ChatInGroup");
-
                     b.Navigation("ChatInMessage");
                 });
 
@@ -1455,8 +1408,6 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.User", b =>
                 {
-                    b.Navigation("ChatInGroups");
-
                     b.Navigation("ChatInMessages");
 
                     b.Navigation("Comments");

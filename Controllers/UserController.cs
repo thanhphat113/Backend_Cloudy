@@ -18,15 +18,13 @@ namespace Backend.Controllers
 
 		private readonly IUserService _userContext;
 
-		private readonly GroupChatService _group;
 		private readonly MediaService _media;
 
 		private readonly RequestNotiService _NotiContext;
 		private readonly PostNotiService _PostContext;
 
-		public UserController(MediaService media, GroupChatService group, IUserService UserContext, RequestNotiService NotiContext, PostNotiService PostContext)
+		public UserController(MediaService media, IUserService UserContext, RequestNotiService NotiContext, PostNotiService PostContext)
 		{
-			_group = group;
 			_media = media;
 			_userContext = UserContext;
 			_NotiContext = NotiContext;
@@ -61,9 +59,8 @@ namespace Backend.Controllers
 
 
 		[HttpGet("user-login")]
-		public async Task<IActionResult> FindById()
+		public async Task<IActionResult?> FindById()
 		{
-			Console.WriteLine("hâhhha");
 			var userId = MiddleWare.GetUserIdFromCookie(Request);
 			if (userId == -1) return null;
 
@@ -89,10 +86,6 @@ namespace Backend.Controllers
 		{
 			var UserId = MiddleWare.GetUserIdFromCookie(Request);
 			var list = await _userContext.GetListByName(name, UserId);
-			// foreach (var item in list)
-			// {
-			// 	item.ProfilePicture = await _media.FindProfilePictureByUserId(item.UserId);
-			// }
 			return Ok(list);
 		}
 
@@ -101,5 +94,57 @@ namespace Backend.Controllers
 		public void Delete(int id)
 		{
 		}
+
+		// [HttpGet("GetUserProfile/{id}")]
+		// public async Task<IActionResult> GetUserProfile(int id)
+		// {
+		// 	var rs = await _userContext.GetUserProfile(id);
+		// 	return Ok(rs);
+		// }
+
+		// [HttpPut("UpdateProfilePicture")]
+		// public async Task<IActionResult> UpdateProfilePicture([FromForm] RequestUpdatePicture data)
+		// {
+		// 	var rs = await _userContext.UpdateProfilePicture(data.userId, data.mediaId, data.file);
+		// 	return Ok(rs);
+		// }
+
+		// [HttpPut("UpdateCoverPicture")]
+		// public async Task<IActionResult> UpdateCoverPicture([FromForm] RequestUpdatePicture data)
+		// {
+		//     var rs = await _userContext.UpdateCoverPicture(data.userId, data.mediaId, data.file);
+		//     return Ok(rs);
+		// }
+
+		// [HttpPost("AddFriend")]
+		// public async Task<IActionResult> AddFriend(int toUserId)
+		// {
+		// 	var fromUserId = MiddleWare.GetUserIdFromCookie(Request);
+		// 	var rs = await _userContext.AddFriend(fromUserId, toUserId);
+		// 	return Ok(rs);
+		// }
+
+		// [HttpPost("AcceptFriend")]
+		// public async Task<IActionResult> AcceptFriend(int fromUserId)
+		// {
+		// 	var toUserId = MiddleWare.GetUserIdFromCookie(Request);
+		// 	var rs = await _userContext.AcceptFriend(fromUserId, toUserId);
+		// 	return Ok(rs);
+		// }
+
+		// [HttpPost("DeleteFriend")]
+		// public async Task<IActionResult> DeleteFriend(int user2)
+		// {
+		// 	var user1 = MiddleWare.GetUserIdFromCookie(Request);
+		// 	var rs = await _userContext.DeleteFriend(user1, user2);
+		// 	return Ok(rs);
+		// }
+	}
+
+	public class RequestUpdatePicture
+	{
+		public int userId { get; set; }
+		public int mediaId { get; set; }
+		public IFormFile? file { get; set; }
 	}
 }

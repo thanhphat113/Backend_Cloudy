@@ -7,7 +7,7 @@ namespace Backend.Models;
 
 public partial class User
 {
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
 
     public string FirstName { get; set; } = null!;
 
@@ -21,17 +21,11 @@ public partial class User
 
     public string? Location { get; set; }
 
-    public int? GenderId { get; set; }
-
-    public bool? IsOnline { get; set; } = false;
+    public int? GenderId { get; set; } = 1;
 
     public DateTime DateCreated { get; set; }
 
     public DateTime DateUpdated { get; set; }
-
-    [JsonIgnore]
-    public virtual ICollection<ChatInGroup> ChatInGroups { get; set; } = new List<ChatInGroup>();
-    // [JsonIgnore]
 
     public virtual ICollection<ChatInMessage> ChatInMessages { get; set; } = new List<ChatInMessage>();
 
@@ -69,6 +63,4 @@ public partial class User
     public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
     [JsonIgnore]
     public virtual ICollection<UserInGroup> UserInGroups { get; set; } = new List<UserInGroup>();
-    [JsonIgnore]
-    public virtual ICollection<GroupChat> GroupChats { get; set; } = new List<GroupChat>();
 }

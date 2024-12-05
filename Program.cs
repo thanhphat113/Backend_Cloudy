@@ -11,7 +11,6 @@ using Backend.Services;
 using Backend.Helper;
 using Backend.Models;
 using Backend.Services.Interface;
-using Microsoft.OpenApi.Models;
 using Backend.RealTime;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,7 +60,6 @@ builder.Services.AddScoped<PostNotiService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IService<MainTopic>, MainTopicService>();
 builder.Services.AddScoped<HistorySearchService>();
-builder.Services.AddScoped<GroupChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<MainTopicService>();
 builder.Services.AddScoped<IChatInMessService, ChatInMessageService>();
