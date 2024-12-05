@@ -4,10 +4,8 @@ Mạng xã hội này cung cấp các tính năng cơ bản như đăng ký, đ�
 ## Mục Lục
 1. [Giới thiệu](#giới-thiệu)
 2. [Cài Đặt](#cài-đặt)
-3. [Sử Dụng API](#sử-dụng-api)
-4. [Tài Liệu API](#tài-liệu-api)
-5. [Kiểm Tra](#kiểm-tra)
-6. [Giới Thiệu Về Tác Giả](#giới-thiệu-về-tác-giả)
+3. [Kiểm Tra](#kiểm-tra)
+4. [Giới Thiệu Về Tác Giả](#giới-thiệu-về-tác-giả)
 
 ## Giới Thiệu
 
@@ -27,3 +25,36 @@ Mạng xã hội này cung cấp các tính năng cơ bản như đăng ký, đ�
 ```bash
 git clone https://github.com/username/social-network-api.git
 cd social-network-api
+```
+
+### Kiểm tra
+## 1. Tài Khoản Demo
+
+Chúng tôi cung cấp tài khoản demo để bạn có thể thử nghiệm API mà không cần phải đăng ký mới. Sử dụng thông tin đăng nhập sau để truy cập API:
+
+## 2. Thông Tin Tài Khoản Demo
+
+- **Email**: 15@gmail.com
+- **Mật khẩu**: 123
+
+### Giới Thiệu Về Tác Giả
+
+### 1. **Lý Thanh Phát**
+
+- **Vai trò**: FullStack, Leader
+- **Kỹ năng**: 
+  - C# & ASP.NET Core
+  - MySQL, SignalR
+  - WebRTC
+  - ReactJs
+  - Quản lý trạng thái với Redux
+- **Mô tả**: chịu trách nhiệm chính trong việc phát triển dự án, bao gồm việc tạo và quản lý cơ sở dữ liệu, dựng cấu trúc dự án, xác thực người dùng, cũng như xử lý các chức năng chính của hệ thống.
+
+### 2. **Nguyễn Minh Tú**
+- **Vai trò**: FullStack
+- **Kỹ năng**:
+  - ReactJS
+  - C# & ASP.NET Core
+- **Mô tả**: phụ trách phần giao diện và xử lý API về thông tin cá nhân.
+
+
