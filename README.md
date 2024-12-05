@@ -58,7 +58,6 @@ Chúng tôi cung cấp tài khoản demo để bạn có thể thử nghiệm AP
 
 ### 1. **Lý Thanh Phát**
 
-- **Vai trò**: FullStack, Leader
 - **Kỹ năng**: 
   - C# & ASP.NET Core
   - MySQL, SignalR
@@ -66,7 +65,6 @@ Chúng tôi cung cấp tài khoản demo để bạn có thể thử nghiệm AP
 - **Mô tả**: chịu trách nhiệm chính trong việc phát triển dự án, bao gồm việc tạo và quản lý cơ sở dữ liệu, dựng cấu trúc dự án, xác thực người dùng, cũng như xử lý các chức năng chính của hệ thống.
 
 ### 2. **Minh Điền**
-- **Vai trò**: FullStack
 - **Kỹ năng**:
   - C# & ASP.NET Core
 - **Mô tả**: phụ trách xử lý API về thông tin cá nhân.
