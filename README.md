@@ -11,6 +11,8 @@ Mạng xã hội này cung cấp các tính năng cơ bản như đăng ký, đ�
 
 **Social Network API** là một hệ thống mạng xã hội cho phép người dùng đăng ký, đăng nhập, chia sẻ bài viết, kết bạn và tương tác với các bài viết của bạn bè. Mục tiêu của API này là xây dựng một nền tảng mạng xã hội đơn giản nhưng đầy đủ các chức năng cơ bản để kết nối mọi người. Dự án được phát triển bằng **ASP.NET Core** và sử dụng **MySQL** làm cơ sở dữ liệu.
 
+**Frontend_Cloudy**: [https://github.com/thanhphat113/Frontend_Cloudy](https://github.com/thanhphat113/Frontend_Cloudy) 
+
 ## Cài Đặt
 
 Để cài đặt và chạy dự án này, bạn cần thực hiện các bước sau:
@@ -61,15 +63,13 @@ Chúng tôi cung cấp tài khoản demo để bạn có thể thử nghiệm AP
   - C# & ASP.NET Core
   - MySQL, SignalR
   - WebRTC
-  - ReactJs
-  - Quản lý trạng thái với Redux
 - **Mô tả**: chịu trách nhiệm chính trong việc phát triển dự án, bao gồm việc tạo và quản lý cơ sở dữ liệu, dựng cấu trúc dự án, xác thực người dùng, cũng như xử lý các chức năng chính của hệ thống.
 
 ### 2. **Minh Điền**
 - **Vai trò**: FullStack
 - **Kỹ năng**:
-  - ReactJS
   - C# & ASP.NET Core
-- **Mô tả**: phụ trách phần giao diện và xử lý API về thông tin cá nhân.
+- **Mô tả**: phụ trách xử lý API về thông tin cá nhân.
+
 
 
