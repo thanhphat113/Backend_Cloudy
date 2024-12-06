@@ -41,7 +41,7 @@ dotnet ef update database
 ```bash
 dotnet run
 ```
-API của bạn sẽ chạy trên cổng mặc định, ví dụ <code>http://localhost:5164<code>
+API của bạn sẽ chạy trên cổng mặc định, ví dụ <code>http://localhost:5164</code>
 
 ## Kiểm tra
 ### 1. Tài Khoản Demo
