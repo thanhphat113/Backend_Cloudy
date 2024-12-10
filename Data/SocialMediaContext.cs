@@ -23,6 +23,7 @@ public partial class SocialMediaContext : DbContext
 
     public virtual DbSet<Comment> Comments { get; set; }
 
+
     public virtual DbSet<HistorySearch> HistorySearches { get; set; }
 
     public virtual DbSet<MainTopic> MainTopics { get; set; }
@@ -63,13 +64,14 @@ public partial class SocialMediaContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=Cloudy;user=root", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.4.28-mariadb"));
+        => optionsBuilder.UseMySql("server=localhost;database=SocialMedia;user=root;password=", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.4.28-mariadb"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
             .UseCollation("utf8mb4_general_ci")
             .HasCharSet("utf8mb4");
+
 
         modelBuilder.Entity<ChatInMessage>(entity =>
         {
@@ -82,7 +84,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.MessagesId, "messages_id");
 
             entity.Property(e => e.ChatId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("chat_id");
             entity.Property(e => e.Content)
@@ -137,7 +138,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.UserId, "fk_comments_user_id");
 
             entity.Property(e => e.CommentId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("comment_id");
             entity.Property(e => e.ChildOf)
@@ -175,6 +175,8 @@ public partial class SocialMediaContext : DbContext
                 .HasConstraintName("fk_comments_user_id");
         });
 
+
+
         modelBuilder.Entity<HistorySearch>(entity =>
         {
             entity.HasKey(e => e.HistoryId).HasName("PRIMARY");
@@ -186,7 +188,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.OtherUserId, "other_user");
 
             entity.Property(e => e.HistoryId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("history_id");
             entity.Property(e => e.DateSearch)
@@ -235,7 +236,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.MediaType, "fk_type_media");
 
             entity.Property(e => e.MediaId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("media_id");
             entity.Property(e => e.MediaType)
@@ -251,28 +251,11 @@ public partial class SocialMediaContext : DbContext
             entity.HasOne(d => d.MediaTypeNavigation).WithMany(p => p.Media)
                 .HasForeignKey(d => d.MediaType)
                 .HasConstraintName("fk_type_media");
-
-            entity.HasMany(d => d.MessageMedia)
-                .WithMany(p => p.Medias)
-                .UsingEntity<Dictionary<string, object>>(
-                    "media_message",
-                    x => x.HasOne<Message>()
-                        .WithMany()
-                        .HasForeignKey("message_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("fk_message_media"),
-                    x => x.HasOne<Media>()
-                        .WithMany()
-                        .HasForeignKey("media_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("fk_media_message")
-                    );
-
         });
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.MessagesId).HasName("PRIMARY");
+            entity.HasKey(e => new { e.MessagesId }).HasName("PRIMARY");
 
             entity.ToTable("messages");
 
@@ -283,7 +266,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.User2, "user_2");
 
             entity.Property(e => e.MessagesId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("messages_id");
             entity.Property(e => e.MainTopic)
@@ -330,7 +312,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.CreatedByUserId, "idx_created_by_user_id_posts");
 
             entity.Property(e => e.PostId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("post_id");
             entity.Property(e => e.Content)
@@ -384,8 +365,26 @@ public partial class SocialMediaContext : DbContext
                         .HasForeignKey("media_id"),
                     j => j.HasOne<Post>()
                         .WithMany()
-                        .HasForeignKey("post_id")
-                    );
+                        .HasForeignKey("post_id"),
+                    j =>
+                    {
+                        j.HasKey("media_id", "post_id");
+                    });
+
+            entity.HasMany(d => d.ReadPosts).WithMany(p => p.ReadPosts)
+                .UsingEntity<Dictionary<string, object>>(
+                    "post_user_read",
+                    j => j.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id"),
+                    j => j.HasOne<Post>()
+                        .WithMany()
+                        .HasForeignKey("post_id"),
+                    j =>
+                    {
+                        j.HasKey("user_id", "post_id");
+                    });
+
 
 
             entity.HasOne(d => d.Privacy).WithMany(p => p.Posts)
@@ -407,7 +406,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.TypeId, "fk_post_notifications_type");
 
             entity.Property(e => e.PostNotificationId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("post_notification_id");
             entity.Property(e => e.DateCreated)
@@ -443,16 +441,11 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<PrivacySetting>(entity =>
         {
-            entity.HasData(new PrivacySetting { PrivacyId = 1, PrivacyName = "Public" },
-                            new PrivacySetting { PrivacyId = 2, PrivacyName = "Friends" },
-                            new PrivacySetting { PrivacyId = 3, PrivacyName = "Private" }
-            );
             entity.HasKey(e => e.PrivacyId).HasName("PRIMARY");
 
             entity.ToTable("privacy_settings");
 
             entity.Property(e => e.PrivacyId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("privacy_id");
             entity.Property(e => e.PrivacyName)
@@ -462,13 +455,14 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<ReactsComment>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.CommentId }).HasName("PRIMARY");
+            entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
             entity.ToTable("reacts_comment");
 
             entity.HasIndex(e => e.CommentId, "fk_reacts_comment_comment_id");
 
             entity.Property(e => e.UserId)
+                .ValueGeneratedNever()
                 .HasColumnType("int(11)")
                 .HasColumnName("user_id");
             entity.Property(e => e.CommentId)
@@ -487,8 +481,9 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<ReactsPost>(entity =>
         {
-            entity.HasKey(e => new { e.PostId, e.UserId });
-            entity.ToTable("reacts_post");
+            entity
+                .HasNoKey()
+                .ToTable("reacts_post");
 
             entity.HasIndex(e => e.PostId, "fk_reacts_post_post_id");
 
@@ -512,10 +507,6 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<Relationship>(entity =>
         {
-            entity.HasData(new Relationship { RelationshipId = 1, TypeRelationship = 1, FromUserId = 1, ToUserId = 2 },
-                            new Relationship { RelationshipId = 2, TypeRelationship = 2, FromUserId = 1, ToUserId = 3 },
-                            new Relationship { RelationshipId = 3, TypeRelationship = 2, FromUserId = 2, ToUserId = 3 }
-                            );
             entity.HasKey(e => e.RelationshipId).HasName("PRIMARY");
 
             entity.ToTable("relationship");
@@ -568,7 +559,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.ToUserId, "fk_request_notifications_to_user_id");
 
             entity.Property(e => e.NotificationId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("notification_id");
             entity.Property(e => e.DateCreated)
@@ -629,9 +619,6 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<TypeMedia>(entity =>
         {
-            entity.HasData(new TypeMedia { TypeId = 1, TypeName = "Picture" },
-                            new TypeMedia { TypeId = 2, TypeName = "Video" },
-                            new TypeMedia { TypeId = 3, TypeName = "File" });
             entity.HasKey(e => e.TypeId).HasName("PRIMARY");
 
             entity.ToTable("type_media");
@@ -646,18 +633,6 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<TypePostNotification>(entity =>
         {
-            entity.HasData(new TypePostNotification { TypeId = 1, TypeName = "newpost", Content = "đã đăng một bài viết mới" },
-                            new TypePostNotification { TypeId = 2, TypeName = "sharepost", Content = "đã chia sẻ một bài viết của bạn" },
-                            new TypePostNotification { TypeId = 3, TypeName = "likepost", Content = "đã thả cloud vào một bài viết của bạn" },
-                            new TypePostNotification { TypeId = 4, TypeName = "comment", Content = "đã bình luận vào một bài viết của bạn" },
-                            new TypePostNotification
-                            {
-                                TypeId = 5,
-                                TypeName = "likecomment",
-                                Content = "đã thả cloud cho một comment của bạn"
-                            },
-                            new TypePostNotification { TypeId = 6, TypeName = "commentoncomment", Content = "đđã trả lời bình luận của bạn" }
-                            );
             entity.HasKey(e => e.TypeId).HasName("PRIMARY");
 
             entity.ToTable("type_post_notifications");
@@ -675,8 +650,6 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<TypeRelationship>(entity =>
         {
-            entity.HasData(new TypeRelationship { TypeId = 1, TypeName = "Follower" },
-                            new TypeRelationship { TypeId = 2, TypeName = "Friend" });
             entity.HasKey(e => e.TypeId).HasName("PRIMARY");
 
             entity.ToTable("type_relationship");
@@ -692,18 +665,13 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasData(new User { UserId = 1, FirstName = "Hấu", LastName = "Dưa", Email = "15@gmail.com", Password = "AQAAAAIAAYagAAAAEOYjiubhy6sR49wGjul/RSJOElGbL+T1BHdWMr6O2ATWaJcZLKnm49DaFKrkKPvoKA==" },
-                            new User { UserId = 2, FirstName = "Đủ", LastName = "Đu", Email = "10@gmail.com", Password = "AQAAAAIAAYagAAAAEBIqogwoDD07RFh7d5XB0iO3XQfOiT4WLcH5jCQz53Ai5sqU2ebdhqaiWWRCChMEgg==" },
-                            new User { UserId = 3, FirstName = "Riêng", LastName = "Sầu", Email = "12@gmail.com", Password = "AQAAAAIAAYagAAAAENdJI7tGR/5QBSoCakofqb73ExGowB6S2NmoMd4WLB3h2OJ5SvCqhWCRoQ4wsVxR+Q==" }
-                            );
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.ToTable("user");
+            entity.ToTable("users");
 
             entity.HasIndex(e => e.Email, "idx_username").IsUnique();
 
             entity.Property(e => e.UserId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("user_id");
             entity.Property(e => e.Bio)
@@ -735,6 +703,7 @@ public partial class SocialMediaContext : DbContext
             entity.Property(e => e.GenderId)
                 .HasColumnType("int(1)")
                 .HasColumnName("gender_id");
+
             entity.HasOne(d => d.Gender).WithMany(g => g.Users)
                 .HasForeignKey(d => d.GenderId)
                 .HasConstraintName("fk_gender");
@@ -751,7 +720,6 @@ public partial class SocialMediaContext : DbContext
             entity.HasIndex(e => e.CreatedByUserId, "idx_created_by_user_id");
 
             entity.Property(e => e.GroupId)
-                .ValueGeneratedOnAdd()
                 .HasColumnType("int(11)")
                 .HasColumnName("group_id");
             entity.Property(e => e.Bio)
@@ -794,9 +762,6 @@ public partial class SocialMediaContext : DbContext
 
         modelBuilder.Entity<GenderType>(entity =>
         {
-            entity.HasData(new GenderType { GenderId = 1, GenderName = "Không cung cấp" },
-                            new GenderType { GenderId = 2, GenderName = "Nam" },
-                            new GenderType { GenderId = 3, GenderName = "Nữ" });
             entity.HasKey(e => e.GenderId);
             entity.ToTable("gender_type");
 

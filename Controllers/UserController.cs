@@ -17,15 +17,17 @@ namespace Backend.Controllers
 	{
 
 		private readonly IUserService _userContext;
+		private readonly IPostService _post;
 
 		private readonly MediaService _media;
 
-		private readonly RequestNotiService _NotiContext;
+		private readonly INotificationsService _NotiContext;
 		private readonly PostNotiService _PostContext;
 
-		public UserController(MediaService media, IUserService UserContext, RequestNotiService NotiContext, PostNotiService PostContext)
+		public UserController(IPostService post, MediaService media, IUserService UserContext, INotificationsService NotiContext, PostNotiService PostContext)
 		{
 			_media = media;
+			_post = post;
 			_userContext = UserContext;
 			_NotiContext = NotiContext;
 			_PostContext = PostContext;
@@ -35,6 +37,13 @@ namespace Backend.Controllers
 		public async Task<IActionResult> Get()
 		{
 			return Ok(await _userContext.GetAll());
+		}
+
+		[HttpGet("followers")]
+		public async Task<IActionResult> GetFollower()
+		{
+			var UserId = MiddleWare.GetUserIdFromCookie(Request);
+			return Ok(await _userContext.GetFollower(UserId));
 		}
 
 		// [HttpGet("friends-by-name")]
@@ -66,7 +75,12 @@ namespace Backend.Controllers
 
 			var information = await _userContext.GetLoginById(userId);
 			var friends = await _userContext.GetFriends(userId);
-			// var groupchat = await _group.FindByUserId(userId);
+
+			foreach (var item in friends)
+			{
+				if (OnlineHub.IsOnline(item.UserId)) item.IsOnline = true;
+			}
+
 			var requests = await _NotiContext.FindByUserId(userId);
 			// var media = await _media.FindProfilePictureByUserId(userId);
 			var postrequests = await _PostContext.FindByUserId(userId);

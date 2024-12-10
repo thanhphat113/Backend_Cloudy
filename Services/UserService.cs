@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 
 using AutoMapper.QueryableExtensions;
+using Backend.RealTime;
+using Backend.Helper;
 
 
 namespace Backend.Services
@@ -98,12 +100,13 @@ namespace Backend.Services
                             .Where(p => p.CreatedByUserId == item.UserId && p.IsPictureProfile == true)
                             .SelectMany(p => p.Medias));
 
-            if (MediaIsProfile != null)
+            if (MediaIsProfile != null && !MediaIsProfile.Src.StartsWith($"{_httpContextAccessor.HttpContext.Request.Scheme}://"))
             {
                 MediaIsProfile.Src = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/media/{MediaIsProfile.Src}";
-
-                result.ProfilePicture = MediaIsProfile;
             }
+
+            result.ProfilePicture = MediaIsProfile;
+
             return result;
         }
 
@@ -124,8 +127,6 @@ namespace Backend.Services
                     query.Where(r =>
                             (r.FromUserId == id || r.ToUserId == id) &&
                             r.TypeRelationship == 2)
-                            .Include(r => r.FromUser)
-                            .Include(r => r.ToUser)
                             .Select(r => r.FromUserId == id ? r.ToUser : r.FromUser)
                             .ProjectTo<UserPrivate>(_mapper.ConfigurationProvider));
 
@@ -135,38 +136,41 @@ namespace Backend.Services
                             .Where(p => p.CreatedByUserId == item.UserId && p.IsPictureProfile == true)
                             .SelectMany(p => p.Medias));
 
-                if (MediaIsProfile != null)
+                if (MediaIsProfile != null && !MediaIsProfile.Src.StartsWith($"{_httpContextAccessor.HttpContext.Request.Scheme}://"))
                 {
                     MediaIsProfile.Src = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/media/{MediaIsProfile.Src}";
-
-                    item.ProfilePicture = MediaIsProfile;
                 }
+                item.ProfilePicture = MediaIsProfile;
+
             }
 
             var withChat = await FriendsWithChat(id, users);
 
-            var result = withChat.Select(user => _mapper.Map<UserPrivate>(user));
+            // var result = withChat.Select(user => _mapper.Map<UserPrivate>(user));
 
-            return result;
+            return withChat;
         }
 
-        public async Task<string> FindToLogin(string email, string password)
+        public async Task<dynamic> FindToLogin(string email, string password)
         {
             var user = await _unit.Users.GetByConditionAsync<User>(query => query.Where(u => u.Email == email));
+            if (OnlineHub.IsOnline(user.UserId))
+            {
+                return new { IsCorrect = false, Message = "Tài khoản đã được đăng nhập ở một nơi khác" };
+            }
 
-            if (user == null) return null;
+
+            if (user == null) return new { IsCorrect = false, Message = "Email không tồn tại !!!" };
 
             var passHasher = new PasswordHasher<User>();
             var passwordVerificationResult = passHasher.VerifyHashedPassword(user, user.Password, password);
 
             if (passwordVerificationResult == PasswordVerificationResult.Success)
             {
-                return _jwtToken.GenerateJwtToken(user.UserId.ToString());
+                return new { IsCorrect = true, Message = _jwtToken.GenerateJwtToken(user.UserId.ToString()) };
             }
-            else
-            {
-                return null;
-            }
+
+            return new { IsCorrect = false, Message = "Mật khẩu không đúng !!!" };
         }
 
         public async Task<ValidateEmail> IsHasEmail(string email)
@@ -207,14 +211,42 @@ namespace Backend.Services
             return result;
         }
 
-        public async Task<IEnumerable<UserPrivate>> GetListByName(string name, int UserId)
+        public async Task<dynamic> GetListByName(string name, int UserId)
         {
-            var result = await _unit.Users.FindAsync<UserPrivate>(query => query
+            var result = await _unit.Users.FindAsync(query => query
                                 .Where(u => u.UserId != UserId &&
                                 (u.LastName.Contains(name) ||
                                 u.FirstName.Contains(name)))
-                                .ProjectTo<UserPrivate>(_mapper.ConfigurationProvider));
+                                .Include(u => u.Posts)
+                                .ThenInclude(p => p.Medias)
+                                .ProjectTo<UserNew>(_mapper.ConfigurationProvider));
+            foreach (var item in result)
+            {
+                if (item.ProfilePicture == null) continue;
+                item.ProfilePicture = MiddleWare.GetFullSrc(item.ProfilePicture);
+            }
+
             return result;
+        }
+
+        public async Task<UserNew> GetUserById(int id)
+        {
+            try
+            {
+                var item = await _unit.Users.GetByConditionAsync(query => query
+                        .Where(u => u.UserId == id)
+                        .Include(u => u.Posts)
+                        .ThenInclude(p => p.Medias)
+                        .ProjectTo<UserNew>(_mapper.ConfigurationProvider));
+
+                if (item.ProfilePicture == null) return item;
+                item.ProfilePicture = MiddleWare.GetFullSrc(item.ProfilePicture);
+                return item;
+            }
+            catch (System.Exception ex)
+            {
+                throw new ArgumentException("Lỗi: " + ex);
+            }
         }
 
         // public async Task<dynamic?> GetUserInfor(int userId)
@@ -577,6 +609,28 @@ namespace Backend.Services
                 IsSuccess = true,
                 Message = "Thành công!"
             };
+        }
+
+        public Task<dynamic> GetUserProfile(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<dynamic> GetFollower(int userId)
+        {
+            try
+            {
+                return await _unit.Relationship.FindAsync(query => query
+                        .Where(r => r.FromUserId == userId || r.ToUserId == userId)
+                        .Where(r => r.TypeRelationship == 1)
+                        .Select(r => r.FromUserId == userId ? r.ToUser : r.FromUser)
+                        .ProjectTo<UserPrivate>(_mapper.ConfigurationProvider));
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine("Lỗi: " + ex);
+                throw;
+            }
         }
     }
 

@@ -6,7 +6,9 @@ using Backend.Models;
 
 namespace Backend.Services.Interface
 {
-	public interface IRelationshipService : IService<Relationship>
+	public interface IPostService : IService<Post>
 	{
+		Task<dynamic> GetFriendPostsByUserId(int UserId, int OffSet, int Limit);
+
 	}
 }

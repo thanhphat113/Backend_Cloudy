@@ -7,7 +7,7 @@ namespace Backend.Models;
 
 public partial class User
 {
-    public int? UserId { get; set; }
+    public int UserId { get; set; }
 
     public string FirstName { get; set; } = null!;
 
@@ -21,11 +21,15 @@ public partial class User
 
     public string? Location { get; set; }
 
-    public int? GenderId { get; set; } = 1;
+    public int? GenderId { get; set; }
+
+    [NotMapped]
+    public bool? IsOnline { get; set; } = false;
 
     public DateTime DateCreated { get; set; }
 
     public DateTime DateUpdated { get; set; }
+
 
     public virtual ICollection<ChatInMessage> ChatInMessages { get; set; } = new List<ChatInMessage>();
 
@@ -34,6 +38,10 @@ public partial class User
 
     [JsonIgnore]
     public virtual GenderType? Gender { get; set; }
+
+    [JsonIgnore]
+
+    public virtual ICollection<Post> ReadPosts { get; set; }
     [JsonIgnore]
     public virtual ICollection<HistorySearch> HistorySearchFromUserNavigations { get; set; } = new List<HistorySearch>();
     [JsonIgnore]
